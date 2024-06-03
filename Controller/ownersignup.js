@@ -1,6 +1,7 @@
 let express=require('express');
 let ownersignup=express.Router();
 let nodemailer=require('nodemailer');
+let bcrypt=require('bcryptjs');
 let sendmail= async (code,email)=>{
     let tran=nodemailer.createTransport({
         service:"gmail",
@@ -26,6 +27,7 @@ let sendmail= async (code,email)=>{
 let {dataowner}=require("../Model/database");
 ownersignup.post("/ownersignup",async (req,res)=>{
     let {location,fname,lname,email,phone,password}=req.body;
+    password=await bcrypt.hash(password,10);
     let image="avatar.png";
     let v=await dataowner.findOne({email:email});
     if(v){

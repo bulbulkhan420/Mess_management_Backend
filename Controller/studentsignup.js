@@ -1,6 +1,7 @@
 let express=require('express');
 let studentsignup=express.Router();
 let nodemailer=require('nodemailer');
+const bcrypt = require('bcryptjs');
 let sendmail= async (code,email)=>{
     let tran=nodemailer.createTransport({
         service:"gmail",
@@ -31,6 +32,7 @@ let sendmail= async (code,email)=>{
 let {datastudent}=require("../Model/database");
 studentsignup.post("/studentsignup",async (req,res)=>{
     let {fname,lname,email,phone,password}=req.body;
+    password=await bcrypt.hash(password, 10);
     let image="avatar.png";
     let v=await datastudent.findOne({email:email});
     if(v){
