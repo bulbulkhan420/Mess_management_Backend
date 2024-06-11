@@ -12,8 +12,13 @@ let sendmail= async (code,email)=>{
     });
     try{
         await tran.sendMail({
-            from:"deathturn420@gmail.com",
+            from:{
+            name:"Mess Management",
+            address:"deathturn420@gmail.com"
+            },
+           
             to:email,
+            subject:"Verification Code To Verify Your Id",
             subject:"Verify your Email",
             text:`Your verification password id ${code}`
            });
@@ -28,7 +33,7 @@ let {dataowner}=require("../Model/database");
 ownersignup.post("/ownersignup",async (req,res)=>{
     let {location,fname,lname,email,phone,password}=req.body;
     password=await bcrypt.hash(password,10);
-    let image="avatar.png";
+    let image="https://res.cloudinary.com/dfhug7rwx/image/upload/v1717610831/avatar_j76eeo.png";
     let v=await dataowner.findOne({email:email});
     if(v){
         if(v.verify){

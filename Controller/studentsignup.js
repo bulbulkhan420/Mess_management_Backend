@@ -20,7 +20,8 @@ let sendmail= async (code,email)=>{
                 address:"deathturn420@gmail.com"
             },
             to:email,
-            text:`Your verification password id ${code}`
+            subject:"Verification Code To Verify Your Id",
+            text:`Your verification code is ${code}`
            });
     }
     catch(err){
@@ -33,7 +34,7 @@ let {datastudent}=require("../Model/database");
 studentsignup.post("/studentsignup",async (req,res)=>{
     let {fname,lname,email,phone,password}=req.body;
     password=await bcrypt.hash(password, 10);
-    let image="avatar.png";
+    let image="https://res.cloudinary.com/dfhug7rwx/image/upload/v1717610831/avatar_j76eeo.png";
     let v=await datastudent.findOne({email:email});
     if(v){
         if(v.verify){
@@ -44,7 +45,7 @@ studentsignup.post("/studentsignup",async (req,res)=>{
         else{
             await datastudent.deleteOne({email:email});
             let b=Math.floor(Math.random()*900000)+100000;
-            await datastudent.insertMany([{fname,lname,image,email,phone,password,verify:false,otp:b}]);
+            await datastudent.insertMany([{fname,lname,name:fname+" "+lname,image,email,phone,password,currentaddress:"Not included",permanentaddress:"Not included",institution:"Not included",currentmess:"Not included",verify:false,otp:b}]);
             await sendmail(b,email);
             res.json({
                 check:false
@@ -54,7 +55,7 @@ studentsignup.post("/studentsignup",async (req,res)=>{
     }
     else{
         let b=Math.floor(Math.random()*900000)+100000;
-        await datastudent.insertMany([{fname,lname,image,email,phone,password,verify:false,otp:b}]);
+        await datastudent.insertMany([{fname,lname,name:fname+" "+lname,image,email,phone,password,currentaddress:"Not included",permanentaddress:"Not included",institution:"Not included",currentmess:"Not included",verify:false,otp:b}]);
         await sendmail(b,email);
         res.json({
             check:false

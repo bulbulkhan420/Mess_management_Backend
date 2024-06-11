@@ -12,7 +12,7 @@ studentlogin.post("/login",async (req,res)=>{
         
        bcrypt.compare(password,result.password,function(err,tt){
         if(tt){
-            let token=jwt.sign({name:result.fname+" "+result.lname,email:result.email,phone:result.phone,image:result.image},process.env.JWT_KEY,{expiresIn:'100d'});
+            let token=jwt.sign({name:result.fname+" "+result.lname,email:result.email,phone:result.phone,image:result.image,currentaddress:result.currentaddress,permanentaddress:result.permanentaddress,institution:result.institution,currentmess:result.currentmess},process.env.JWT_KEY,{expiresIn:'100d'});
 
             res.json({
                 check:true,
@@ -54,11 +54,12 @@ let verify=(req,res,next)=>{
     }
  }
  
-studentlogin.post('/verify/student',verify,(req,res)=>{
+studentlogin.post('/verify/student',verify,async (req,res)=>{
   let info=req.user;
+  let v=await datastudent.findOne({email:info.email,verify:true});
   res.json({
     verify:true,
-   info
+   info:v
   })
 })
 module.exports={studentlogin};
