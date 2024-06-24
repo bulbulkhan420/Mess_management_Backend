@@ -50,11 +50,22 @@ let verify=(req,res,next)=>{
        }
     }
     
-ownerlogin.post("/verify/owner",verify,(req,res)=>{
-    let info=req.user;
-    res.json({
-        verify:true,
-        info
-    })
+ownerlogin.post("/verify/owner",verify,async (req,res)=>{
+    let info=req.user.email;
+    let v=await dataowner.findOne({email:info});
+    if(v){
+        res.json({
+            verify:true,
+            info:v,
+            error:false
+        })
+    }
+    else{
+        res.json({
+            verify:true,
+            error:true
+        })
+    }
+   
 })
 module.exports={ownerlogin};

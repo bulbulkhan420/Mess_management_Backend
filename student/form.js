@@ -3,8 +3,10 @@ const multer = require('multer');
 const appi=express.Router();
 let env=require('dotenv').config();
 let jwt=require('jsonwebtoken');
+const {ObjectId}=require('bson');
+const SSLCommerzPayment = require('sslcommerz-lts');
 let cloudinary=require('cloudinary').v2;
-const {datastudent,datamess}=require("../Model/database");
+const {datastudent,datamess,datastudentseat}=require("../Model/database");
 // Multer storage configuration
 
 const upload = multer({ dest: 'pictures/' });
@@ -20,6 +22,10 @@ cloudinary.config({
   //     console.log(result); 
   //     res.json({url:result.secure_url});
   // });
+  //ssl commmerch
+  const store_id = 'abltd666caff2ebf8f';
+const store_passwd = 'abltd666caff2ebf8f@ssl';
+const is_live = false;
 // Route for handling file uploa
 appi.post('/uploadpic', upload.single('bul'),async (req, res) => {
  let file=req.file;
@@ -113,10 +119,10 @@ appi.post('/mess/seatinfo',verify,async (req,res)=>{
   let {location,minimum,maximum,seat_type}=req.body;
   let v;
   if(location.length>0&&seat_type.length>0){
-     v=await datamess.find({mess_location:location,mess_seat_price:{$gte:minimum,$lte:maximum},mess_seat_type:seat_type});
+     v=await datamess.find({mess_location:location,mess_seat_price:{$gte:minimum,$lte:maximum},mess_seat_type:seat_type,available:true});
   }
   else{
-  v=await datamess.find();
+  v=await datamess.find({available:true});
   }
   if(v){
     res.json({
@@ -138,5 +144,119 @@ appi.post('/student/payment',verify,async (req,res)=>{
     verify:true,
     info:v
   })
+})
+
+
+//ssl commerch
+const tran_id=new ObjectId().toString();
+appi.post('/paymentdone',verify,async (req,res)=>{
+  let check=await datastudentseat.findOne({student_email:req.body.email});
+  if(check){
+   res.json({exist:true})
+    
+  }
+  else{
+    let tk=req.body.tk;
+  const data = {
+    total_amount: req.body.tk,
+    currency: 'BDT',
+    tran_id: tran_id, // use unique tran_id for each api call
+    success_url: `http://localhost:3005/payment/success/${req.body._id}/${req.body.email}/${tran_id}`,
+    fail_url: 'http://localhost:3030/fail',
+    cancel_url: 'http://localhost:3030/cancel',
+    ipn_url: 'http://localhost:3030/ipn',
+    shipping_method: 'Courier',
+    product_name: 'Payment of seat booking',
+    product_category: 'mess seat',
+    product_profile: 'general',
+    cus_name: 'Customer Name',
+    cus_email: req.body.email,
+    cus_add1: 'Dhaka',
+    cus_add2: 'Dhaka',
+    cus_city: 'Dhaka',
+    cus_state: 'Dhaka',
+    cus_postcode: '1000',
+    cus_country: 'Bangladesh',
+    cus_phone: '01711111111',
+    cus_fax: '01711111111',
+    ship_name: 'Customer Name',
+    ship_add1: 'Dhaka',
+    ship_add2: 'Dhaka',
+    ship_city: 'Dhaka',
+    ship_state: 'Dhaka',
+    ship_postcode: 1000,
+    ship_country: 'Bangladesh',
+};
+const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live)
+sslcz.init(data).then(apiResponse => {
+    // Redirect the user to payment gateway
+    let GatewayPageURL = apiResponse.GatewayPageURL
+    res.json({url:GatewayPageURL,exist:false});
+    console.log('Redirecting to: ', GatewayPageURL)
+});
+appi.post(`/payment/success/:_id/:email/:tran_id`,async (req,res)=>{
+   let pp=await datastudent.findOne({email:req.params.email});
+    let v=await datamess.findOneAndUpdate({_id:req.params._id,available:true},{$set:{available:false,student_booked:pp.name,student_email:pp.email,student_number:pp.phone}});
+    let p=await datamess.findOne({_id:req.params._id})
+    await datastudent.findOneAndUpdate({email:req.params.email},{$set:{currentmess:p.mess_name}});
+    let b=await datastudentseat.insertMany([{
+      mess_id:req.params._id,
+      student_email:req.params.email,
+      tran_id:req.params.tran_id,
+      Booking_date:new Date(),
+      last_payment_date:new Date(),
+      rent:tk
+    }])
+    res.redirect(`http://localhost:5173/studentprofile/search/messconfirm/${req.params._id}/${req.params.email}/${req.params.tran_id}`);
+})
+
+
+  } 
+})
+
+
+appi.post('/mess/status',verify,async (req,res)=>{
+  let v=await datastudentseat.findOne({student_email:req.body.email});
+  if(v){
+    let p=await datamess.findOne({_id:v.mess_id});
+    let a=v.last_payment_date;
+    let b=new Date();
+    let d=b-a;
+    let ml=1000*60*60*24;
+    d=d/ml;
+    d=Math.floor(d);
+    let info={
+      tran_id:v.tran_id,
+      rent:v.rent,
+      mess_info:p,
+      booking_date:v.Booking_date,
+      current_date:new Date(),
+      previous_payment_day:v.last_payment_date,
+      payment_duration:d
+    }
+    res.json({
+      verify:true,
+      booked:true,
+      info
+    })
+  }
+  else{
+  res.json({
+    verify:true,
+    booked:false
+  })
+  }
+})
+
+appi.post('/delete/studentmess',verify, async (req,res)=>{
+  let {tran_id,_id}=req.body;
+  await datamess.findOneAndUpdate({_id},{$set:{available:true,student_booked:'Not Booked',student_number:'Not Included',student_email:'Not Included'}});
+  let v=await datastudentseat.findOneAndDelete({tran_id});
+  if(v){
+    res.json({
+      verify:true,
+
+    })
+  }
 })
 module.exports={appi};
