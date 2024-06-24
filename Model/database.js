@@ -1,6 +1,6 @@
 const mongoose=require('mongoose');
 const env=require('dotenv').config();
-let url=process.env.DATABASEL_URL;
+let url=process.env.DATABASE_URL;
 mongoose.connect(url);
 let Schema=new mongoose.Schema({
     fname:String,
