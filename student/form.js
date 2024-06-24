@@ -207,7 +207,7 @@ appi.post(`/payment/success/:_id/:email/:tran_id`,async (req,res)=>{
       last_payment_date:new Date(),
       rent:tk
     }])
-    res.redirect(`https://messbulbul-git-master-sha-alam-bulbuls-projects.vercel.app/studentprofile/search/messconfirm/${req.params._id}/${req.params.email}/${req.params.tran_id}`);
+    res.redirect(`https://messbulbul-gbvrkmb40-sha-alam-bulbuls-projects.vercel.app/studentprofile/search/messconfirm/${req.params._id}/${req.params.email}/${req.params.tran_id}`);
 })
 
 //https://messbulbul-git-master-sha-alam-bulbuls-projects.vercel.app
