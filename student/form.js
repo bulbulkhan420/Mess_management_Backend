@@ -161,7 +161,7 @@ appi.post('/paymentdone',verify,async (req,res)=>{
     total_amount: req.body.tk,
     currency: 'BDT',
     tran_id: tran_id, // use unique tran_id for each api call
-    success_url: `https://mess-management-backend.onrender.com/payment/success/${req.body._id}/${req.body.email}/${tran_id}`,
+    success_url: `http://localhost:3001/payment/success/${req.body._id}/${req.body.email}/${tran_id}`,
     fail_url: 'http://localhost:3030/fail',
     cancel_url: 'http://localhost:3030/cancel',
     ipn_url: 'http://localhost:3030/ipn',
