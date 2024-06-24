@@ -161,7 +161,7 @@ appi.post('/paymentdone',verify,async (req,res)=>{
     total_amount: req.body.tk,
     currency: 'BDT',
     tran_id: tran_id, // use unique tran_id for each api call
-    success_url: `http://localhost:3005/payment/success/${req.body._id}/${req.body.email}/${tran_id}`,
+    success_url: `https://mess-management-backend.onrender.com/payment/success/${req.body._id}/${req.body.email}/${tran_id}`,
     fail_url: 'http://localhost:3030/fail',
     cancel_url: 'http://localhost:3030/cancel',
     ipn_url: 'http://localhost:3030/ipn',
@@ -211,6 +211,7 @@ appi.post(`/payment/success/:_id/:email/:tran_id`,async (req,res)=>{
 })
 
 //https://messbulbul-git-master-sha-alam-bulbuls-projects.vercel.app
+//https://messbulbul-git-master-sha-alam-bulbuls-projects.vercel.app/studentprofile/search/messconfirm/6679ce8106c1d32b34bbdab9/bulbulkhan420420@gmail.com/Not_paid
   } 
 })
 
