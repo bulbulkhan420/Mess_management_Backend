@@ -23,8 +23,8 @@ cloudinary.config({
   //     res.json({url:result.secure_url});
   // });
   //ssl commmerch
-  const store_id = 'abltd666caff2ebf8f';
-const store_passwd = 'abltd666caff2ebf8f@ssl';
+  const store_id = process.env.store_id;
+const store_passwd = process.env.store_passwd;
 const is_live = false;
 // Route for handling file uploa
 appi.post('/uploadpic', upload.single('bul'),async (req, res) => {
@@ -207,7 +207,7 @@ appi.post(`/payment/success/:_id/:email/:tran_id`,async (req,res)=>{
       last_payment_date:new Date(),
       rent:tk
     }])
-    res.redirect(`http://localhost:5173/studentprofile/search/messconfirm/${req.params._id}/${req.params.email}/${req.params.tran_id}`);
+    res.redirect(`https://mess-management-frontend-git-master-sha-alam-bulbuls-projects.vercel.app/studentprofile/search/messconfirm/${req.params._id}/${req.params.email}/${req.params.tran_id}`);
 })
 
 

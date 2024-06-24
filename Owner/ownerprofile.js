@@ -12,9 +12,9 @@ const {dataowner,datamess}=require("../Model/database");
 // Multer storage configuration
 const upload = multer({ dest: 'pictures/' });
 cloudinary.config({ 
-    cloud_name: 'dfhug7rwx', 
-   api_key: '262784511165531', 
-     api_secret: 'T_JoL4AMHQeaMQYy2_GFW8S0uco' 
+    cloud_name: process.env.cloud_name, 
+   api_key: process.env.api_key, 
+     api_secret: process.env.api_secret 
  });
 let verify=(req,res,next)=>{
   let authorization=req.body.authorization;
