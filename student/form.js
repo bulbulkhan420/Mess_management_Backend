@@ -207,12 +207,12 @@ appi.post(`/payment/success/:_id/:email/:tran_id`,async (req,res)=>{
       last_payment_date:new Date(),
       rent:tk
     }])
-    res.redirect(`http://localhost:5173/studentprofile/search/messconfirm/${req.params._id}/${req.params.email}/${req.params.tran_id}`);
+    res.redirect(`https://messbulbul.vercel.app/studentprofile/search/messconfirm/${req.params._id}/${req.params.email}/${req.params.tran_id}`);
 })
 
 appi.post('/payment/fail/:_id/:email/:tran_id',async (req,res)=>{
 
-  res.redirect(`http://localhost:5173/studentprofile/search/messconfirm/${req.params._id}/${req.params.email}/${req.params.tran_id}`);
+  res.redirect(`https://messbulbul.vercel.app/studentprofile/search/messconfirm/${req.params._id}/${req.params.email}/${req.params.tran_id}`);
 })
 //https://mess-management-backend.onrender.com
 //https://messbulbul-git-master-sha-alam-bulbuls-projects.vercel.app
@@ -347,14 +347,14 @@ appi.post('/payment/success/rent/:_id/:tran_id',async (req,res)=>{
      let tran_id=req.params.tran_id;
      await datamess.findOneAndUpdate({_id:_id},{$set:{time:new Date()}})
      await datastudentseat.findOneAndUpdate({mess_id:_id},{$set:{tran_id,last_payment_date:new Date()}});
-     res.redirect(`http://localhost:5173/studentprofile/currentmess/${email}`)
+     res.redirect(`https://messbulbul.vercel.app/studentprofile/currentmess/${email}`)
 })
 
 appi.post('/payment/fail/rent',async (req,res)=>{
-  res.redirect(`http://localhost:5173/studentprofile/currentmess/${email}`)
+  res.redirect(`https://messbulbul.vercel.app/studentprofile/currentmess/${email}`)
 })
 appi.post('/payment/cancel/rent',async (req,res)=>{
-  res.redirect(`http://localhost:5173/studentprofile/currentmess/${email}`)
+  res.redirect(`https://messbulbul.vercel.app/studentprofile/currentmess/${email}`)
 })
 })
 module.exports={appi};

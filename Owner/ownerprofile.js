@@ -35,7 +35,7 @@ let verify=(req,res,next)=>{
         })
      }
   }
-// Route for handling file uploa
+// Route for handling file upload
 ownerapp.post("/ownerprofile",async (req,res)=>{
    let email=req.body.email;
    let v=await dataowner.findOne({email:email});
