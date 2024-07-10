@@ -6,7 +6,7 @@ let jwt=require('jsonwebtoken');
 const {ObjectId}=require('bson');
 const SSLCommerzPayment = require('sslcommerz-lts');
 let cloudinary=require('cloudinary').v2;
-const {datastudent,datamess,datastudentseat}=require("../Model/database");
+const {datastudent,datamess,datastudentseat, datamessnotice}=require("../Model/database");
 // Multer storage configuration
 
 const upload = multer({ dest: 'pictures/' });
@@ -161,9 +161,9 @@ appi.post('/paymentdone',verify,async (req,res)=>{
     total_amount: req.body.tk,
     currency: 'BDT',
     tran_id: tran_id, // use unique tran_id for each api call
-    success_url: `https://mess-management-backend.onrender.com/payment/success/${req.body._id}/${req.body.email}/${tran_id}`,
-    fail_url: 'http://localhost:3030/fail',
-    cancel_url: 'http://localhost:3030/cancel',
+    success_url: `http://localhost:3001/payment/success/${req.body._id}/${req.body.email}/${tran_id}`,
+    fail_url: `http://localhost:3001/payment/fail/${req.body._id}/${req.body.email}/${"Not_paid"}`,
+    cancel_url: `http://localhost:3001/payment/fail/${req.body._id}/${req.body.email}/${"Not_paid"}`,
     ipn_url: 'http://localhost:3030/ipn',
     shipping_method: 'Courier',
     product_name: 'Payment of seat booking',
@@ -196,7 +196,7 @@ sslcz.init(data).then(apiResponse => {
 });
 appi.post(`/payment/success/:_id/:email/:tran_id`,async (req,res)=>{
    let pp=await datastudent.findOne({email:req.params.email});
-    let v=await datamess.findOneAndUpdate({_id:req.params._id,available:true},{$set:{available:false,student_booked:pp.name,student_email:pp.email,student_number:pp.phone}});
+    let v=await datamess.findOneAndUpdate({_id:req.params._id,available:true},{$set:{available:false,student_booked:pp.name,student_email:pp.email,student_number:pp.phone,time:new Date()}});
     let p=await datamess.findOne({_id:req.params._id})
     await datastudent.findOneAndUpdate({email:req.params.email},{$set:{currentmess:p.mess_name}});
     let b=await datastudentseat.insertMany([{
@@ -207,9 +207,14 @@ appi.post(`/payment/success/:_id/:email/:tran_id`,async (req,res)=>{
       last_payment_date:new Date(),
       rent:tk
     }])
-    res.redirect(`https://messbulbul-gbvrkmb40-sha-alam-bulbuls-projects.vercel.app/studentprofile/search/messconfirm/${req.params._id}/${req.params.email}/${req.params.tran_id}`);
+    res.redirect(`http://localhost:5173/studentprofile/search/messconfirm/${req.params._id}/${req.params.email}/${req.params.tran_id}`);
 })
 
+appi.post('/payment/fail/:_id/:email/:tran_id',async (req,res)=>{
+
+  res.redirect(`http://localhost:5173/studentprofile/search/messconfirm/${req.params._id}/${req.params.email}/${req.params.tran_id}`);
+})
+//https://mess-management-backend.onrender.com
 //https://messbulbul-git-master-sha-alam-bulbuls-projects.vercel.app
 //https://messbulbul-git-master-sha-alam-bulbuls-projects.vercel.app/studentprofile/search/messconfirm/6679ce8106c1d32b34bbdab9/bulbulkhan420420@gmail.com/Not_paid
   } 
@@ -259,5 +264,97 @@ appi.post('/delete/studentmess',verify, async (req,res)=>{
 
     })
   }
+})
+
+appi.post('/student/noticeinfo',verify,async (req,res)=>{
+  let {email}=req.body;
+  let v=await datastudentseat.findOne({student_email:email});
+  if(v){
+    let _id=v.mess_id;
+    let p=await datamess.findOne({_id});
+    p=p.mess_email;
+    let r=await datamessnotice.find({mess_email:p});
+    r.reverse();
+    if(r){
+      res.status(200).json({
+        verify:true,
+        available:true,
+        info:r
+      })
+    }
+    else{
+      res.json({
+        verify:true,
+        available:false
+      })
+    }
+  }
+  else{
+    res.json({
+      verify:true,
+      available:false
+    })
+  }
+})
+
+
+appi.post('/month/payment',verify,async (req,res)=>{
+  let {_id,rent,email}=req.body;
+  let tran_id=new ObjectId().toString();
+
+
+
+  const data = {
+    total_amount: rent,
+    currency: 'BDT',
+    tran_id: tran_id, // use unique tran_id for each api call
+    success_url: `http://localhost:3001/payment/success/rent/${_id}/${tran_id}`,
+    fail_url: 'http://localhost:3001/payment/fail/rent',
+    cancel_url: 'http://localhost:3001/payment/cancel/rent',
+    ipn_url: 'http://localhost:3030/ipn',
+    shipping_method: 'Courier',
+    product_name: 'Payment of seat booking',
+    product_category: 'mess seat',
+    product_profile: 'general',
+    cus_name: 'Customer Name',
+    cus_email: 'bulbulkhan420420@gmail.com',
+    cus_add1: 'Dhaka',
+    cus_add2: 'Dhaka',
+    cus_city: 'Dhaka',
+    cus_state: 'Dhaka',
+    cus_postcode: '1000',
+    cus_country: 'Bangladesh',
+    cus_phone: '01711111111',
+    cus_fax: '01711111111',
+    ship_name: 'Customer Name',
+    ship_add1: 'Dhaka',
+    ship_add2: 'Dhaka',
+    ship_city: 'Dhaka',
+    ship_state: 'Dhaka',
+    ship_postcode: 1000,
+    ship_country: 'Bangladesh',
+};
+const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live)
+sslcz.init(data).then(apiResponse => {
+    // Redirect the user to payment gateway
+    let GatewayPageURL = apiResponse.GatewayPageURL
+    res.json({url:GatewayPageURL});
+    
+});
+
+appi.post('/payment/success/rent/:_id/:tran_id',async (req,res)=>{
+     let _id=req.params._id;
+     let tran_id=req.params.tran_id;
+     await datamess.findOneAndUpdate({_id:_id},{$set:{time:new Date()}})
+     await datastudentseat.findOneAndUpdate({mess_id:_id},{$set:{tran_id,last_payment_date:new Date()}});
+     res.redirect(`http://localhost:5173/studentprofile/currentmess/${email}`)
+})
+
+appi.post('/payment/fail/rent',async (req,res)=>{
+  res.redirect(`http://localhost:5173/studentprofile/currentmess/${email}`)
+})
+appi.post('/payment/cancel/rent',async (req,res)=>{
+  res.redirect(`http://localhost:5173/studentprofile/currentmess/${email}`)
+})
 })
 module.exports={appi};

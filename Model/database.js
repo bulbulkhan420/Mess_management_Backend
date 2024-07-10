@@ -1,6 +1,6 @@
 const mongoose=require('mongoose');
 const env=require('dotenv').config();
-let url=process.env.DATABASE_URL;
+let url=process.env.DATABASEL_URL;
 mongoose.connect(url);
 let Schema=new mongoose.Schema({
     fname:String,
@@ -50,7 +50,8 @@ let seatschema=new mongoose.Schema({
     available:Boolean,
     student_number:String,
     student_email:String,
-    mess_seat_image:String
+    mess_seat_image:String,
+    time:Object
 })
 
 let datamess=mongoose.model('messSeat',seatschema);
@@ -67,4 +68,12 @@ let studentseat=new mongoose.Schema({
 
 })
 let datastudentseat=mongoose.model('studentseat',studentseat);
-module.exports={datastudent,dataowner,datamess,datastudentseat};
+
+let postsc=new mongoose.Schema({
+    mess_email:String,
+    mess_name:String,
+    mess_post:String,
+    postdate:String,
+});
+let datamessnotice=mongoose.model('notice',postsc);
+module.exports={datastudent,dataowner,datamess,datastudentseat,datamessnotice};

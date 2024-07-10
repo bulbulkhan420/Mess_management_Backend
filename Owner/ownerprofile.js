@@ -6,7 +6,7 @@ let jwt=require('jsonwebtoken');
 const ownerapp=express.Router();
 
 let cloudinary=require('cloudinary').v2;
-const {dataowner,datamess}=require("../Model/database");
+const {dataowner,datamess, datamessnotice}=require("../Model/database");
 //ssl commerch
 
 // Multer storage configuration
@@ -68,7 +68,8 @@ ownerapp.post('/addnewroom',upload.single('mess_seat_image'),verify,async (req,r
     available:true,
     mess_seat_price:info.mess_seat_price,
     mess_owner_phone:info.mess_owner_phone,
-    mess_seat_type:info.mess_seat_type
+    mess_seat_type:info.mess_seat_type,
+    time:new Date()
   }]);
   if(v){
     res.json({
@@ -112,6 +113,13 @@ ownerapp.post('/addmap',verify,async (req,res)=>{
 ownerapp.post('/unavailablelist',verify,async (req,res)=>{
  let v=await datamess.find({mess_email:req.body.mess_email,available:false});
  
+ for(let i=0;i<v.length;i++){
+  let d=new Date();
+  let k=d-v[i].time;
+  k=k/(60*60*24*1000);
+  k=Math.floor(k);
+  v[i].time=k;
+ }
  if(v){
   res.status(200).json({
     verify:true,
@@ -130,5 +138,39 @@ ownerapp.post('/seatstatus',verify,async (req,res)=>{
   })
 })
 
-
+ownerapp.post('/submit/post',verify,async (req,res)=>{
+   let p=await dataowner.findOne({email:req.body.email});
+ 
+  let v=await datamessnotice.insertMany([{mess_name:p.messname,mess_email:req.body.email,mess_post:req.body.post,postdate:new Date()}]);
+  if(v){
+    res.json({
+      verify:true
+    })
+  }
+})
+ownerapp.post('/postinfo',verify,async (req,res)=>{
+  let v=await datamessnotice.find({mess_email:req.body.email});
+  v.reverse();
+  res.json({
+    verify:true,
+    info:v
+  })
+})
+ownerapp.post('/owner/changenumber',verify,async (req,res)=>{
+  let {email,phone}=req.body;
+  let v=await dataowner.findOneAndUpdate({email},{$set:{phone}});
+  let p=await datamess.updateMany({mess_email:email},{$set:{mess_owner_phone:phone}});
+  if(v && p){
+    res.json({
+      verify:true,
+      ok:true
+    })
+  }
+  else{
+    res.json({
+      verify:true,
+      ok:false
+    })
+  }
+})
 module.exports={ownerapp};
