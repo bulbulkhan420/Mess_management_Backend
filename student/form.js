@@ -192,7 +192,7 @@ sslcz.init(data).then(apiResponse => {
     // Redirect the user to payment gateway
     let GatewayPageURL = apiResponse.GatewayPageURL
     res.json({url:GatewayPageURL,exist:false});
-    console.log('Redirecting to: ', GatewayPageURL)
+   
 });
 appi.post(`/payment/success/:_id/:email/:tran_id`,async (req,res)=>{
    let pp=await datastudent.findOne({email:req.params.email});
